@@ -1,0 +1,5 @@
+1. Criar tabela de dies, quartus, actio
+	dies[data, unique quartus_id]
+	quartus [unique id, titulum, pars(1, 2, 3, 4)] 
+	actio [not unique id_quartus, titulum] 
+2.
