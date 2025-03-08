@@ -3,12 +3,16 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"testing"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
+
+/**
+* 1 - verificar se Entity está sincronizado com a string que criar a tabela
+* 2 - inserção incorreta levata erro sem com panic
+ */
 
 // diretamente, o database é reiniciado a cada teste
 /* Testing flow
@@ -24,7 +28,7 @@ var db = setupTestDB()
 func TestRepository(t *testing.T) {
 
 	diesRepo := DiesRepository{}
-	_, err := diesRepo.newDiesRepository(db)
+	_, err := diesRepo.Create(db)
 	testTableInitialization(t, "dies")
 
 	if err != nil {
@@ -32,7 +36,7 @@ func TestRepository(t *testing.T) {
 	}
 
 	quartumRepository := QuartumRepository{}
-	_, err = quartumRepository.newQuartumRepository(db)
+	_, err = quartumRepository.Create(db)
 	testTableInitialization(t, "quartum")
 
 	if err != nil {
@@ -53,30 +57,11 @@ func TestRepository(t *testing.T) {
 		db.Exec("insert into dies(date) values (?)",
 			dies.GetDate())
 
-		diesList := []Dies{}
-		querySQL := "select id, date from dies"
-		rows, err := db.Query(querySQL)
+		diesRepository := DiesRepository{}
+		diesList, err := diesRepository.FindAll(db)
+
 		if err != nil {
-			t.Error("RAND query error on dies:", err)
-		}
-		defer rows.Close()
-
-		for rows.Next() {
-			var id uint
-			var date string
-
-			err := rows.Scan(&id, &date)
-			if err != nil {
-				t.Errorf("was not told to error: %q", err)
-			}
-
-			newDies := Dies{id: id}
-			parsedDate, err := time.Parse(time.DateOnly, date)
-			if err != nil {
-				log.Fatalf("error while parsing date: %q", err)
-			}
-			newDies.SetDate(parsedDate)
-			diesList = append(diesList, newDies)
+			t.Error("unexpected error: ", err)
 		}
 
 		want := Dies{1, time.Now().UTC().Format(time.DateOnly)}
@@ -96,46 +81,25 @@ func TestRepository(t *testing.T) {
 	* 1 - trocar hora por finis(ou termino), initium
 	* 2 - pars não pode ser menor que 0 ou maior que 4
 	* 3 - fazer many-to-one com tabela do dies
+	* 4 - insertion errors from sqlite3 arre not returned - checar erro de inserç
 	 */
 	t.Run("insert row in quartum table and get it back", func(t *testing.T) {
 		quartum := Quartum{}
 		quartum.SetTitulum("programação")
 		quartum.SetHora(time.Now())
 		quartum.SetPars(1)
-		fmt.Println(quartum.GetHora())
+		quartum.SetDiesId(1)
 
-		db.Exec("insert into quartum(pars, titulum, hora) values (?, ?, ?);",
-			quartum.GetPars(), quartum.GetTitulum(), quartum.GetHora())
+		quartumRepository := QuartumRepository{}
+		err := quartumRepository.Save(db, quartum)
 
-		quartumList := []Quartum{}
-		querySQL := "select id, titulum, hora, pars from quartum"
-		rows, err := db.Query(querySQL)
 		if err != nil {
-			t.Error("RAND query error on quartum: ", err)
+			t.Fatalf("error was not expected: %q", err)
 		}
-		defer rows.Close()
+		quartumList, err := quartumRepository.FindAll(db)
 
-		for rows.Next() {
-			var id uint
-			var titulum string
-			var hora string
-			var pars uint8
-
-			err := rows.Scan(&id, &titulum, &hora, &pars)
-			fmt.Println(hora)
-
-			if err != nil {
-				t.Errorf("was not told to error: %q", err)
-			}
-
-			newQuartum := Quartum{id: id, hora: hora}
-			newQuartum.SetPars(pars)
-			newQuartum.SetTitulum(titulum)
-			// newQuartum.SetHora(hora)
-
-			fmt.Println(newQuartum)
-
-			quartumList = append(quartumList, newQuartum)
+		if err != nil {
+			t.Errorf("unexpected error: %q", err)
 		}
 
 		want := Quartum{
@@ -143,12 +107,11 @@ func TestRepository(t *testing.T) {
 			hora:    time.Now().UTC().Format(time.TimeOnly),
 			titulum: "programação",
 			pars:    1,
+			dies_id: 1,
 		}
 
-		fmt.Println(want)
-
 		if len(quartumList) != 1 {
-			t.Errorf("list of dies should contain 1 element, got %q", len(quartumList))
+			t.Fatalf("list of quartum should contain 1 element, got %q", len(quartumList))
 		}
 
 		got := quartumList[0]
@@ -157,6 +120,61 @@ func TestRepository(t *testing.T) {
 			t.Errorf("want %q, got %q", want, got)
 		}
 	})
+
+	t.Run("id_dies exists on quartum table", func(t *testing.T) {
+
+		// todo mover para assertFindById usando IoC
+		// criar assertNotFindById
+		quartumRepository := QuartumRepository{}
+		var id uint = 1
+		got, err := quartumRepository.FindById(db, id)
+
+		if err != nil {
+			t.Error("unexpected error: ", err)
+		}
+
+		want := Quartum{id: 1, titulum: "programação", pars: 1, dies_id: 1}
+		want.SetHora(time.Now())
+
+		if want != got {
+			t.Errorf("want %q, got %q", want, got)
+		}
+
+	})
+
+	type RepositoryCases[TR any, TE any] struct {
+		Name           string
+		Repository     TR
+		ExpectedEntity TE
+	}
+
+	cases := []RepositoryCases[QuartumRepository, Quartum]{
+		{
+			"slice with one entity",
+			QuartumRepository{},
+			Quartum{id: 1, titulum: "programação", pars: 1, dies_id: 1},
+		},
+	}
+
+	for _, test := range cases {
+		t.Run(test.Name, func(t *testing.T) {
+			repository := test.Repository
+			var id uint = 1
+			got, err := repository.FindById(db, id)
+
+			if err != nil {
+				t.Error("unexpected error: ", err)
+			}
+
+			want := test.ExpectedEntity
+			want.SetHora(time.Now())
+
+			if want != got {
+				t.Errorf("want %q, got %q", want, got)
+			}
+
+		})
+	}
 
 }
 
