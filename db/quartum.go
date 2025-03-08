@@ -22,7 +22,7 @@ func (q *Quartum) GetTitulum() string {
 func (q *Quartum) SetTitulum(titulum string) error {
 
 	if len(titulum) > 60 {
-		return errors.New("titulum não pode ser maior que 60 caracteres.")
+		return errors.New("titulum não pode ser maior que 60 caracteres")
 	}
 	q.titulum = titulum
 	return nil
@@ -53,19 +53,21 @@ func (q *Quartum) SetDiesId(id uint) {
 
 type QuartumRepository struct{}
 
-func (q *QuartumRepository) Create(db DB) (Result, error) {
+func (QuartumRepository) Create(db DB) (Result, error) {
+	/** Child table e Foreign key constraint*/
 	sqlStmt := `create table "quartum" (
 		id integer not null unique primary key autoincrement, 
 		titulum varchar(50) not null, 
 		pars tinyint not null, 
 		hora text, 
-		dies_id integer not null
+		dies_id integer not null,
+		foreign key (dies_id) references dies(id) on delete cascade
 	);`
 
 	return db.Exec(sqlStmt)
 }
 
-func (q *QuartumRepository) FindAll(db DB) ([]Quartum, error) {
+func (QuartumRepository) FindAll(db DB) ([]Quartum, error) {
 	quartumList := []Quartum{}
 	querySQL := "select id, titulum, hora, pars, dies_id from quartum"
 	rows, err := db.Query(querySQL)
@@ -94,7 +96,7 @@ func (q *QuartumRepository) FindAll(db DB) ([]Quartum, error) {
 	return quartumList, nil
 }
 
-func (q *QuartumRepository) FindById(db DB, id uint) (Quartum, error) {
+func (QuartumRepository) FindById(db DB, id uint) (Quartum, error) {
 	var quartum Quartum
 
 	stmt := `select id, titulum, hora, pars, dies_id from quartum where id = ?`
@@ -111,7 +113,7 @@ func (q *QuartumRepository) FindById(db DB, id uint) (Quartum, error) {
 	return quartum, nil
 }
 
-func (q *QuartumRepository) Save(db DB, quartum Quartum) error {
+func (QuartumRepository) Save(db DB, quartum Quartum) error {
 
 	db.Exec(`insert into quartum(
 			pars, titulum, hora, dies_id) 
