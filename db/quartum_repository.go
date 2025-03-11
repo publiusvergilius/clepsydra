@@ -16,6 +16,7 @@ func (QuartumRepository) Create(db DB) (Result, error) {
 		pars tinyint not null, 
 		hora text, 
 		dies_id integer not null,
+		unique(titulum, pars, dies_id),
 		foreign key (dies_id) references dies(id) on delete cascade
 	);`
 
