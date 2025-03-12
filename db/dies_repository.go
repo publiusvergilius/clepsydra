@@ -4,13 +4,13 @@ import "time"
 
 type DiesRepository struct{}
 
-func (d *DiesRepository) Create(db DB) (Result, error) {
+func (DiesRepository) Create(db DB) (Result, error) {
 	sqlStmt := `create table "dies" (id integer not null unique primary key autoincrement, date text unique);`
 
 	return db.Exec(sqlStmt)
 }
 
-func (d *DiesRepository) FindAll(db DB) ([]Dies, error) {
+func (DiesRepository) FindAll(db DB) ([]Dies, error) {
 
 	diesList := []Dies{}
 	querySQL := "select id, date from dies"

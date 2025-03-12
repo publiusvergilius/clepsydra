@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"slices"
 	"testing"
 	"time"
 
@@ -28,8 +29,8 @@ var db = setupTestDB()
 func TestRepository(t *testing.T) {
 	defer db.Close()
 
-	diesRepo := DiesRepository{}
-	_, err := diesRepo.Create(db)
+	diesRepository := DiesRepository{}
+	_, err := diesRepository.Create(db)
 
 	testTableInitialization(t, "dies", err)
 
@@ -53,7 +54,7 @@ func TestRepository(t *testing.T) {
 		{id: 1, titulum: "programação", pars: 1, dies_id: 1},
 		{id: 2, titulum: "música", pars: 2, dies_id: 1},
 		{id: 3, titulum: "programação", pars: 1, dies_id: 2},
-		{id: 4, titulum: "programação", pars: 2, dies_id: 1},
+		{id: 4, titulum: "programação", pars: 1, dies_id: 2},
 	}
 
 	// insert first
@@ -65,65 +66,46 @@ func TestRepository(t *testing.T) {
 		quartum.SetPars(quartum_data[i].GetPars())
 		quartum.SetDiesId(quartum_data[i].GetDiesId())
 
-		// verify if insertion really happened
+		// insert and verify if insertion really happened
 		testOneEntityInsertion(t, db, quartumRepository, quartum)
 
 	}
 
 	testTableNumberOfInsertions(t, db, uint(len(quartum_data)), quartumRepository)
+	assertQuartumIsUnique(t, db, quartumRepository)
 
-	type RepositoryCases struct {
+	type RepositoryCase[T Entity] struct {
 		Name       string
-		Repository Repository[Quartum]
-		Expected   []Quartum
+		Repository Repository[T]
+		Expected   []T
 	}
 
-	cases := []RepositoryCases{
-		{
-			Name:       "one quartum find operation",
-			Repository: quartumRepository,
-			Expected: []Quartum{
-				{id: 1, titulum: "programação", pars: 1, dies_id: 1},
-			},
-		},
-		{
-			Name:       "multiple quartum find operations",
-			Repository: quartumRepository,
-			Expected:   quartum_data,
-		},
+	quartumRepoTest := RepositoryCase[Quartum]{
+		Name:       "verify if inserted data exists in database",
+		Repository: quartumRepository,
+		Expected:   quartum_data,
 	}
 
-	/** testando encotrar por id*/
-	// todo mover para assertFindById usando IoC
-	// criar assertNotFindById
-	for _, test := range cases {
-		t.Run(test.Name, func(t *testing.T) {
+	t.Run(quartumRepoTest.Name, func(t *testing.T) {
+		repository := quartumRepoTest.Repository
 
-			// count number of insertions
-			// testTableNumberOfInsertions(t, db, uint(i+1), quartumRepository)
+		for _, want := range quartumRepoTest.Expected {
+			want.SetHora(time.Now())
 
-			repository := test.Repository
-			var id uint = 1
-			got, err := repository.FindById(db, id)
-
+			list, err := repository.FindAll(db)
 			if err != nil {
-				t.Error("unexpected error: ", err)
+				t.Error("was not told to error on find all quarta: ", err)
 			}
 
-			want := test.Expected
-
-			row := want[0]
-			row.SetHora(time.Now())
-			if row != got {
-				t.Errorf("want %q, got %q", want, got)
+			if !slices.Contains(list, want) {
+				t.Errorf("%q was expected to exists in %q", want, list)
 			}
+		}
 
-		})
+	})
 
-	}
-
-	// assert data is not repeated
-	assertUniqueTitulumPars(t, db, quartumRepository)
+	// assert quartum is not beeing repeated
+	// assertQuartumIsUnique(t, db, quartumRepository)
 
 	/** Get all quarta(plural) where dies_id is equal to dies.id*/
 
@@ -158,13 +140,14 @@ func testOneEntityInsertion[T Entity](t *testing.T, db DB, repository Repository
 	err := repository.Save(db, want)
 
 	if err != nil {
-		t.Fatalf("was not told to error on saving to repository: %q", err)
+		t.Errorf("was not told to error on saving to repository: %q", err)
 	}
 
 	_, err = repository.FindById(db, want.GetID())
+	fmt.Println(err)
 
 	if err != nil {
-		t.Errorf("was not told to error on finding entity: %q", err)
+		t.Fatalf("was not told to error on finding entity: %q", err)
 	}
 }
 
@@ -181,7 +164,7 @@ func testTableNumberOfInsertions[T Entity](t *testing.T, db DB, want uint, repos
 	}
 }
 
-func assertUniqueTitulumPars(t *testing.T, db DB, repository Repository[Quartum]) {
+func assertQuartumIsUnique(t *testing.T, db DB, repository Repository[Quartum]) {
 	t.Helper()
 
 	list, err := repository.FindAll(db)

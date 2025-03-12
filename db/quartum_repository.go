@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 )
 
 type QuartumRepository struct{}
@@ -37,7 +38,6 @@ func (QuartumRepository) FindAll(db DB) ([]Quartum, error) {
 
 		err := rows.Scan(&newQuartum.id, &newQuartum.titulum, &newQuartum.hora, &newQuartum.pars, &newQuartum.dies_id)
 
-		fmt.Println(newQuartum)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				errMessage := fmt.Sprintf("no quartum found: %q", err)
@@ -76,4 +76,19 @@ func (QuartumRepository) Save(db DB, q Quartum) error {
 			values (?, ?, ?, ?)`,
 		q.GetPars(), q.GetTitulum(), q.GetHora(), q.GetDiesId())
 	return nil
+}
+
+func (QuartumRepository) Delete(db DB, id uint) (int64, error) {
+
+	result, err := db.Exec("delete from quartum where id = ?;", id)
+	if err != nil {
+		log.Fatal(err)
+		return 0, err
+	}
+	rowsAffected, err := result.RowsAffected()
+
+	if err != nil {
+		return rowsAffected, err
+	}
+	return rowsAffected, nil
 }
