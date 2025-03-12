@@ -1,0 +1,54 @@
+package db
+
+import (
+	"errors"
+	"time"
+)
+
+type Quartum struct {
+	id      uint
+	titulum string
+	pars    uint8
+	hora    string
+	dies_id uint
+}
+
+func (q Quartum) GetID() uint {
+	return q.id
+}
+
+func (q *Quartum) GetTitulum() string {
+	return q.titulum
+}
+
+func (q *Quartum) SetTitulum(titulum string) error {
+
+	if len(titulum) > 60 {
+		return errors.New("titulum não pode ser maior que 60 caracteres")
+	}
+	q.titulum = titulum
+	return nil
+}
+
+func (q *Quartum) GetHora() string {
+	return q.hora
+}
+func (q *Quartum) SetHora(hora time.Time) {
+	q.hora = hora.UTC().Format(time.TimeOnly)
+}
+
+func (q *Quartum) GetPars() uint8 {
+	return q.pars
+}
+
+func (q *Quartum) SetPars(pars uint8) {
+	q.pars = pars
+}
+
+func (q *Quartum) GetDiesId() uint {
+	return q.dies_id
+}
+
+func (q *Quartum) SetDiesId(id uint) {
+	q.dies_id = id
+}
