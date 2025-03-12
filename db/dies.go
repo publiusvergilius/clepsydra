@@ -12,14 +12,14 @@ type Dies struct {
 	date string `sqlite3:"date"` // 31-01-2025
 }
 
-func (d *Dies) GetID() uint {
+func (d Dies) GetID() uint {
 	return d.id
 }
 
-func (d *Dies) GetDate() string {
+func (d Dies) GetDate() string {
 	return d.date
 }
 
-func (d *Dies) SetDate(date time.Time) {
+func (d Dies) SetDate(date time.Time) {
 	d.date = date.UTC().Format(time.DateOnly)
 }

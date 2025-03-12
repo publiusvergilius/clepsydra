@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"reflect"
 	"slices"
 	"testing"
 	"time"
@@ -54,7 +55,7 @@ func TestRepository(t *testing.T) {
 		{id: 1, titulum: "programação", pars: 1, dies_id: 1},
 		{id: 2, titulum: "música", pars: 2, dies_id: 1},
 		{id: 3, titulum: "programação", pars: 1, dies_id: 2},
-		{id: 4, titulum: "programação", pars: 1, dies_id: 2},
+		{id: 4, titulum: "programação", pars: 2, dies_id: 2},
 	}
 
 	// insert first
@@ -104,12 +105,53 @@ func TestRepository(t *testing.T) {
 
 	})
 
+	quartumRepoTest = RepositoryCase[Quartum]{
+		Name:       "verify if first element was deleted",
+		Repository: quartumRepository,
+		Expected:   quartum_data[1:],
+	}
+
+	quartumRepository.Delete(db, 1)
+	assertNotExist(t, db, quartumRepository, 1)
+	testTableNumberOfInsertions(t, db, uint(len(quartum_data)-1), quartumRepository)
+
 	// assert quartum is not beeing repeated
 	// assertQuartumIsUnique(t, db, quartumRepository)
 
 	/** Get all quarta(plural) where dies_id is equal to dies.id*/
 
 	/** create actio table */
+
+	/** Where dies get it's quarta */
+
+	diesRepoTest := RepositoryCase[Dies]{
+		Name:       "find all quarta that references dies",
+		Repository: diesRepository,
+	}
+
+	var dies_id uint = 1
+
+	got, _ := diesRepository.FindAllQuarta(db, dies_id)
+
+	/** to be compared with dies_quarta */
+	t.Run(diesRepoTest.Name, func(t *testing.T) {
+		quartumList, err := quartumRepository.FindAll(db)
+
+		var want []Quartum
+		if err != nil {
+			t.Fatal("was not told to error: ", err)
+		}
+
+		for _, quartum := range quartumList {
+			if quartum.GetDiesId() == dies_id {
+				want = append(want, quartum)
+			}
+
+		}
+		if !reflect.DeepEqual(want, got) {
+			t.Errorf("want %q, got %q", want, got)
+		}
+	})
 
 }
 
@@ -134,6 +176,24 @@ func testTableInitialization(t *testing.T, tableName string, err error) {
 	}
 }
 
+func assertExist[T Entity](t *testing.T, db DB, repository Repository[T], id uint) {
+	_, err := repository.FindById(db, id)
+
+	if err != nil {
+		t.Fatalf("was not told to error on finding element with %q: %q", id, err)
+	}
+
+}
+
+func assertNotExist[T Entity](t *testing.T, db DB, repository Repository[T], id uint) {
+	element, err := repository.FindById(db, id)
+
+	if err == nil {
+		t.Fatalf("was told to error on finding element with %q", element.GetID())
+	}
+
+}
+
 func testOneEntityInsertion[T Entity](t *testing.T, db DB, repository Repository[T], want T) {
 	t.Helper()
 
@@ -144,7 +204,6 @@ func testOneEntityInsertion[T Entity](t *testing.T, db DB, repository Repository
 	}
 
 	_, err = repository.FindById(db, want.GetID())
-	fmt.Println(err)
 
 	if err != nil {
 		t.Fatalf("was not told to error on finding entity: %q", err)
