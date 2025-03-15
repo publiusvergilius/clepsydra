@@ -8,11 +8,9 @@ import (
 type DiesRepository struct{}
 
 func (DiesRepository) Create(db DB) (Result, error) {
-	sqlStmt := `
-		    create table "dies" 
+	sqlStmt := `create table "dies" 
 		    (id integer not null unique primary key autoincrement, 
-		    date text unique);
-		    `
+		    date text unique);`
 
 	return db.Exec(sqlStmt)
 }
