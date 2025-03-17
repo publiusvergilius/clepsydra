@@ -1,5 +1,7 @@
 # README
 
+Teste
+
 ## About
 
 This is the official Wails React template.
