@@ -7,13 +7,6 @@ import (
 	"log"
 )
 
-type JsonQuartum struct {
-	Titulum string `json:"titulum"`
-	Pars    uint   `json:"pars"`
-	Hora    string `json:"hora"`
-	Dies_id uint   `json:"dies_id"`
-}
-
 type QuartumRepository struct{}
 
 func (QuartumRepository) Create(db DB) (Result, error) {
@@ -43,7 +36,7 @@ func (QuartumRepository) FindAll(db DB) ([]Quartum, error) {
 	for rows.Next() {
 		var newQuartum Quartum
 
-		err := rows.Scan(&newQuartum.id, &newQuartum.titulum, &newQuartum.hora, &newQuartum.pars, &newQuartum.dies_id)
+		err := rows.Scan(&newQuartum.Id, &newQuartum.Titulum, &newQuartum.Hora, &newQuartum.Pars, &newQuartum.Dies_id)
 
 		if err != nil {
 			if err == sql.ErrNoRows {
@@ -63,7 +56,7 @@ func (QuartumRepository) FindById(db DB, id uint) (Quartum, error) {
 	var quartum Quartum
 
 	stmt := `select id, titulum, hora, pars, dies_id from quartum where id = ?`
-	err := db.QueryRow(stmt, id).Scan(&quartum.id, &quartum.titulum, &quartum.hora, &quartum.pars, &quartum.dies_id)
+	err := db.QueryRow(stmt, id).Scan(&quartum.Id, &quartum.Titulum, &quartum.Hora, &quartum.Pars, &quartum.Dies_id)
 
 	if err != nil {
 		if err == sql.ErrNoRows {

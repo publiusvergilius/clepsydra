@@ -2,4 +2,5 @@
 	dies[data, unique quartus_id]
 	quartus [unique id, titulum, pars(1, 2, 3, 4)] 
 	actio [not unique id_quartus, titulum] 
-2.
+
+2. Fazer Sigleton Pattern para configurar o banco de dados Sqlite

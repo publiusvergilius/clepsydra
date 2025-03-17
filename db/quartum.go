@@ -1,6 +1,7 @@
 package db
 
 import (
+	"encoding/json"
 	"errors"
 	"time"
 )
@@ -51,4 +52,27 @@ func (q *Quartum) GetDiesId() uint {
 
 func (q *Quartum) SetDiesId(id uint) {
 	q.dies_id = id
+}
+
+func (q *Quartum) ToString() (string, error) {
+	type JsonQuartum struct {
+		Id      uint   `json:"id"`
+		Titulum string `json:"titulum"`
+		Pars    uint8  `json:"pars"`
+		Hora    string `json:"hora"`
+		Dies_id uint   `json:"dies_id"`
+	}
+	newQuartum := JsonQuartum{
+		Id:      q.GetID(),
+		Titulum: q.GetTitulum(),
+		Pars:    q.GetPars(),
+		Hora:    q.GetHora(),
+		Dies_id: q.GetDiesId(),
+	}
+
+	jsonStr, err := json.Marshal(newQuartum)
+	if err != nil {
+		return "", err
+	}
+	return string(jsonStr), nil
 }
