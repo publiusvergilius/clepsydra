@@ -11,6 +11,7 @@ type Quartum struct {
 	titulum string
 	pars    uint8
 	hora    string
+	prazo   string
 	dies_id uint
 }
 
@@ -36,6 +37,13 @@ func (q *Quartum) GetHora() string {
 }
 func (q *Quartum) SetHora(hora time.Time) {
 	q.hora = hora.UTC().Format(time.TimeOnly)
+}
+
+func (q *Quartum) GetPrazo() string {
+	return q.prazo
+}
+func (q *Quartum) SetPrazo(hora time.Time) {
+	q.prazo = hora.UTC().Format(time.TimeOnly)
 }
 
 func (q *Quartum) GetPars() uint8 {

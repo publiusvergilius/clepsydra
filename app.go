@@ -1,7 +1,6 @@
 package main
 
 import (
-	"clepsydra/db"
 	"context"
 	"database/sql"
 	"fmt"
@@ -10,6 +9,8 @@ import (
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
+
+	"clepsydra/db"
 )
 
 // App struct
@@ -75,11 +76,13 @@ func (a *App) GetAllQuarta() string {
 	return Stringfy(newQuarta)
 }
 
-func (a *App) CreateQuartum() error {
+func (a *App) CreateQuartum(data string) string {
+	fmt.Println(data)
 	d := db.Dies{}
 	d.SetDate(time.Now())
 	dR.Save(prodDB, d)
 
+	/*
 	q := db.Quartum{}
 	q.SetTitulum("Clepsydra")
 	q.SetPars(1)
@@ -87,11 +90,13 @@ func (a *App) CreateQuartum() error {
 	q.SetDiesId(1)
 
 	err := r.Save(prodDB, q)
+
 	if err != nil {
 		return err
 	}
+		*/
 
-	return nil
+	return "created"
 }
 
 func Stringfy(jsonSlice []string) string {

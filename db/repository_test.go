@@ -52,22 +52,32 @@ func TestRepository(t *testing.T) {
 	 */
 
 	quartum_data := []Quartum{
-		{id: 1, titulum: "programação", pars: 1, dies_id: 1},
+		{id: 1, titulum: "programação", pars: 1, dies_id: 1, prazo: "10:10:10"},
 		{id: 2, titulum: "música", pars: 2, dies_id: 1},
 		{id: 3, titulum: "programação", pars: 1, dies_id: 2},
 		{id: 4, titulum: "programação", pars: 2, dies_id: 2},
 	}
 
 	// insert first
-	for i := 0; i < len(quartum_data); i++ {
+	for _, q := range quartum_data {
 
-		quartum := Quartum{id: quartum_data[i].GetID()}
-		quartum.SetTitulum(quartum_data[i].GetTitulum())
+		quartum := Quartum{id: q.GetID()}
+		quartum.SetTitulum(q.GetTitulum())
 		quartum.SetHora(time.Now())
-		quartum.SetPars(quartum_data[i].GetPars())
-		quartum.SetDiesId(quartum_data[i].GetDiesId())
+		quartum.SetPars(q.GetPars())
+		quartum.SetDiesId(q.GetDiesId())
 
 		// insert and verify if insertion really happened
+
+		want := q.prazo
+		parsedTime, _ := time.Parse("15:10:00", want)
+		q.SetPrazo(parsedTime)
+		got := quartum.GetPrazo()
+
+		if got != want {
+			t.Errorf("wanted %q, got %q", want, got)
+		}
+
 		testOneEntityInsertion(t, db, quartumRepository, quartum)
 
 	}
@@ -125,8 +135,7 @@ func TestRepository(t *testing.T) {
 	/** Where dies get it's quarta */
 
 	diesRepoTest := RepositoryCase[Dies]{
-		Name:       "find all quarta that references dies",
-		Repository: diesRepository,
+		Name: "find all quarta that references dies",
 	}
 
 	var dies_id uint = 1
@@ -243,5 +252,21 @@ func assertQuartumIsUnique(t *testing.T, db DB, repository Repository[Quartum]) 
 				}
 			}
 		}
+	}
+}
+
+func assertTimestamp(t *testing.T, want string) {
+
+	t.Helper()
+	parsedTime, err := time.Parse("15:04:05", want)
+
+	if err != nil {
+		t.Errorf("was not told to error on parsing time: %q\n", err)
+	}
+
+	got := parsedTime.Format("12:10:00")
+
+	if got != want {
+		t.Errorf("wanted %q, got %q\n", want, got)
 	}
 }

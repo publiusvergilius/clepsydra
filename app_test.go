@@ -1,13 +1,13 @@
 package main
 
 import (
-	// "clepsydra/db"
-	"clepsydra/db"
 	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
 	"time"
+
+	"clepsydra/db"
 )
 
 func TestConversionSliceToJson(t *testing.T) {
@@ -18,6 +18,7 @@ func TestConversionSliceToJson(t *testing.T) {
 	quartum.SetTitulum("Test")
 	quartum.SetDiesId(1)
 	quartum.SetHora(time.Now())
+	quartum.SetPrazo(time.Now().Add(time.Hour * 2))
 	quartum.SetPars(1)
 	mockedQuarta := []db.Quartum{quartum}
 
