@@ -4,3 +4,5 @@
 	actio [not unique id_quartus, titulum] 
 
 2. Fazer Sigleton Pattern para configurar o banco de dados Sqlite
+
+3. fazer criação de quartum suportar hora entre 0 e 6
