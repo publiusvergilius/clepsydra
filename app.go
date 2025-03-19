@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -57,6 +58,59 @@ func init() {
 
 }
 
+func (a *App) GetAllDies() string {
+	diei, err := dR.FindAll(prodDB)
+	if err != nil {
+		log.Default().Fatalf("unexpected error occurred: %q", err)
+		return "error"
+	}
+
+	fmt.Println(diei)
+	var newDies []string
+	for _, dies := range diei {
+		str, err := dies.ToString()
+		if err == nil {
+			newDies = append(newDies, str)
+		}
+	}
+
+	return Stringfy(newDies)
+}
+
+func (a *App) CreateDies(data string) string {
+	type Request struct {
+		Dies   string `json:"dies"`
+		Format string `json:"format"`
+	}
+	var request Request
+
+	fmt.Println(request)
+	err := json.Unmarshal([]byte(data), &request)
+
+	if err != nil {
+		log.Fatal(err)
+		return "error"
+	}
+
+	parsedTime, err := time.Parse("01/02/2006", request.Dies)
+	if err != nil {
+		log.Fatalf("Error parsing data: %q", err)
+		return err.Error()
+	}
+
+	var dies db.Dies
+	dies.SetDate(parsedTime)
+
+	err = dR.Save(prodDB, dies)
+
+	if err != nil {
+		log.Fatal(err)
+		return err.Error()
+	}
+	return "created"
+
+}
+
 func (a *App) GetAllQuarta() string {
 	quarta, err := r.FindAll(prodDB)
 	if err != nil {
@@ -77,25 +131,20 @@ func (a *App) GetAllQuarta() string {
 }
 
 func (a *App) CreateQuartum(data string) string {
-	fmt.Println(data)
-	d := db.Dies{}
-	d.SetDate(time.Now())
-	dR.Save(prodDB, d)
-
-	/*
-	q := db.Quartum{}
-	q.SetTitulum("Clepsydra")
-	q.SetPars(1)
-	q.SetHora(time.Now())
-	q.SetDiesId(1)
-
-	err := r.Save(prodDB, q)
+	var q db.Quartum
+	err := json.Unmarshal([]byte(data), &q)
 
 	if err != nil {
-		return err
+		log.Fatal(err)
+		return "error"
 	}
-		*/
 
+	err = r.Save(prodDB, q)
+
+	if err != nil {
+		log.Fatal(err)
+		return err.Error()
+	}
 	return "created"
 }
 
