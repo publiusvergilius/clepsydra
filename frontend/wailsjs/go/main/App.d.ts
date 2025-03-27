@@ -9,4 +9,6 @@ export function GetAllDies():Promise<string>;
 
 export function GetAllQuarta():Promise<string>;
 
+export function GetQuartaByDies(arg1:number):Promise<string>;
+
 export function Greet(arg1:string):Promise<string>;

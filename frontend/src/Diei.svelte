@@ -1,10 +1,16 @@
 <script lang="ts">
     import { CreateDies } from '../wailsjs/go/main/App.js'
     export let diei = [];
-    export let refetch;
+    export let refetch: () => void;
+    export let handleClick: (dies: { date: string }) => void;
 
     function optimisticUpdate () {
-        const options = { day: "2-digit", year: "numeric", month: "2-digit" };
+        const options = {
+             day: "2-digit", 
+             year: "numeric", 
+             month: "2-digit" 
+        } as Intl.DateTimeFormatOptions;
+
         const newDate = new Date().toLocaleDateString('en-US', options);
         const json = JSON.stringify({dies: newDate, format: "02/02/2021"});
         CreateDies(json).then(result => console.log(result));
@@ -22,7 +28,9 @@
         {#if (diei.length > 0)}
             {#each diei as dies}
             <div class="box">
-            <h1 class="primary_text">{dies?.date}</h1>
+                <div class="item">
+                    <span on:click={()=>handleClick(dies)}>{dies?.date}</span>
+                </div>
             </div>
             {/each}
         {/if}
@@ -42,6 +50,23 @@
         font-size: 4rem;
         border: none;
         cursor: pointer;
+    }
+    .item {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .item > span{
+        background-color: rgba(255, 255, 255, 0.4);
+        margin-bottom: 1rem;
+        cursor: pointer;
+        font-size: 2rem;
+        font-weight: 600;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);color: #333;
     }
 
 </style>

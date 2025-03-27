@@ -7,12 +7,12 @@ import (
 )
 
 type Quartum struct {
-	id      uint
-	titulum string
-	pars    uint8
-	hora    string
-	prazo   string
-	dies_id uint
+	id      uint   `json:"id"`
+	titulum string `json:"titulum"`
+	pars    uint8  `json:"pars"`
+	hora    string `json:"hora"`
+	prazo   string `json:"prazo"`
+	dies_id uint   `json:"dies_id"`
 }
 
 func (q Quartum) GetID() uint {

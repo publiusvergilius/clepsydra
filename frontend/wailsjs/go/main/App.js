@@ -18,6 +18,10 @@ export function GetAllQuarta() {
   return window['go']['main']['App']['GetAllQuarta']();
 }
 
+export function GetQuartaByDies(arg1) {
+  return window['go']['main']['App']['GetQuartaByDies'](arg1);
+}
+
 export function Greet(arg1) {
   return window['go']['main']['App']['Greet'](arg1);
 }

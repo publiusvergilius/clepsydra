@@ -1,20 +1,23 @@
+
 <script lang="ts">
-  import { Greet, GetAllQuarta, CreateQuartum } from '../wailsjs/go/main/App.js'
-  import Diei from './Diei.svelte';
-  let isOpenModal = true
+  import { Greet, CreateQuartum, GetQuartaByDies } from '../wailsjs/go/main/App.js'
+  let isOpenModal = false
   let resultText: string = "Please enter your name below 👇"
+  let quarta = [];
 
-  let quarta = []
+  type Dies = {
+    id: number,
+    date: string
+  }
+  
+  export let currentDies: Dies = {id: 0, date: ""};
 
-  GetAllQuarta().then(result => quarta = JSON.parse(result))
-
-  console.log('quarta', quarta)
+  GetQuartaByDies(currentDies?.id).then(result => quarta = JSON.parse(result))
 
   let name: string
   let titulum: string
   let pars: number
   let hora: string
-  let dies_id: number
 
   function greet(): void {
     console.log('all quarta', quarta) 
@@ -22,7 +25,7 @@
   }
 
   function createQuartum(): void {
-    const jsonStr = JSON.stringify({titulum, pars, hora, dies_id})
+    const jsonStr = JSON.stringify({titulum, pars, hora, dies_id: currentDies?.id})
     console.log(jsonStr)
     CreateQuartum(jsonStr).then(result => console.log(result))
   }
@@ -30,7 +33,6 @@
 
 <main>
   <div class="layout">
-    <Diei />
     <div class="box">
       <h1 class="primary_text">Mane</h1>
     </div>
@@ -63,8 +65,7 @@
       <input autocomplete="off" bind:value={pars} class="input" id="name" type="number"/>
       <label for="hora">Hora:</label>
       <input autocomplete="off" bind:value={hora} class="input" id="name" type="text"/>
-      <label for="dies_id">Dies_id:</label>
-      <input autocomplete="off" bind:value={dies_id} class="input" id="name" type="number"/>
+
       <button on:click={() => {greet(); createQuartum();}}>Criar</button>
     </form>
   </div>
@@ -183,7 +184,7 @@
 
 .close {
   position: relative;
-  top: -240px;
+  top: -210px;
   right: -630px;
   background-color: rgba(255, 255, 255, 0.5);
   color: black;

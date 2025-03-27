@@ -58,6 +58,10 @@ func init() {
 
 }
 
+/**
+********** Dies related methods
+ */
+
 func (a *App) GetAllDies() string {
 	diei, err := dR.FindAll(prodDB)
 	if err != nil {
@@ -111,6 +115,31 @@ func (a *App) CreateDies(data string) string {
 
 }
 
+/**
+******** Quarta related methods
+ */
+
+func (a *App) GetQuartaByDies(id uint) string {
+
+	quarta, err := r.FindByDies(prodDB, id)
+
+	if err != nil {
+		return ""
+	}
+
+	var newQuarta []string
+
+	for _, quartum := range quarta {
+		str, err := quartum.ToString()
+		if err == nil {
+
+			newQuarta = append(newQuarta, str)
+		}
+	}
+
+	return Stringfy(newQuarta)
+}
+
 func (a *App) GetAllQuarta() string {
 	quarta, err := r.FindAll(prodDB)
 	if err != nil {
@@ -131,15 +160,31 @@ func (a *App) GetAllQuarta() string {
 }
 
 func (a *App) CreateQuartum(data string) string {
-	var q db.Quartum
-	err := json.Unmarshal([]byte(data), &q)
+	type Request struct {
+		Id      uint   `json:"id"`
+		Titulum string `json:"titulum"`
+		Pars    uint8  `json:"pars"`
+		Hora    string `json:"hora"`
+		Prazo   string `json:"prazo"`
+		Dies_id uint   `json:"dies_id"`
+	}
+	var request Request
 
+	err := json.Unmarshal([]byte(data), &request)
 	if err != nil {
 		log.Fatal(err)
 		return "error"
 	}
 
-	err = r.Save(prodDB, q)
+	var newQuartum db.Quartum
+
+	newQuartum.SetHora(time.Now())
+	newQuartum.SetTitulum(request.Titulum)
+	newQuartum.SetDiesId(request.Dies_id)
+	newQuartum.SetPars(request.Pars)
+
+	fmt.Println("new q: ", newQuartum)
+	err = r.Save(prodDB, newQuartum)
 
 	if err != nil {
 		log.Fatal(err)
@@ -148,6 +193,9 @@ func (a *App) CreateQuartum(data string) string {
 	return "created"
 }
 
+/**
+************* Helpers
+ */
 func Stringfy(jsonSlice []string) string {
 	result := "[" + strings.Trim(strings.Join(jsonSlice, ","), " ") + "]"
 	return result
