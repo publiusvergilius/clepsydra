@@ -140,7 +140,7 @@ func TestRepository(t *testing.T) {
 
 	var dies_id uint = 1
 
-	got, _ := diesRepository.FindAllQuarta(db, dies_id)
+	got, _ := diesRepository.FindQuarta(db, dies_id)
 
 	/** to be compared with dies_quarta */
 	t.Run(diesRepoTest.Name, func(t *testing.T) {

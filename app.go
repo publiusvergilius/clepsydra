@@ -100,11 +100,11 @@ func (a *App) CreateDies(data string) string {
 
 	var dies db.Dies
 	dies.SetDate(parsedTime)
+	fmt.Printf("dies: %+v\n", dies)
 
 	err = dR.Save(prodDB, dies)
 
 	if err != nil {
-		log.Fatal(err)
 		return err.Error()
 	}
 	return "created"
