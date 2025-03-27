@@ -1,6 +1,7 @@
 package db
 
 import (
+	"encoding/json"
 	"time"
 )
 
@@ -20,6 +21,24 @@ func (d Dies) GetDate() string {
 	return d.date
 }
 
-func (d Dies) SetDate(date time.Time) {
+func (d *Dies) SetDate(date time.Time) {
 	d.date = date.UTC().Format(time.DateOnly)
+}
+
+func (d Dies) ToString() (string, error) {
+	type JsonStruct struct {
+		Id   uint   `json:"id"`
+		Date string `json:"date"`
+	}
+	newDies := JsonStruct{
+		Id:   d.GetID(),
+		Date: d.GetDate(),
+	}
+
+	jsonStr, err := json.Marshal(newDies)
+	if err != nil {
+		return "", err
+	}
+
+	return string(jsonStr), nil
 }

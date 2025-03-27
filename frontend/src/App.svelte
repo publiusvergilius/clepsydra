@@ -1,62 +1,56 @@
 <script lang="ts">
-  import {Greet, GetAllQuarta,CreateQuartum} from '../wailsjs/go/main/App.js'
+  import { GetAllDies} from '../wailsjs/go/main/App.js'
+  import Diei from "./Diei.svelte";
+  import Quartum from './Quartum.svelte';
 
-  let resultText: string = "Please enter your name below 👇"
+  let diei = [];
+  function fetchAllDies () {
+    GetAllDies().then(result => { 
+      console.log('result', result) 
+      diei = JSON.parse(result)
+    })
+  }
+  fetchAllDies()
 
-  let quarta = []
+  type Dies = {
+    id: number,
+    date: string,
+  }
+  let currentDies: Dies | null = null;
 
-  GetAllQuarta().then(result => quarta = JSON.parse(result))
-
-  console.log('quarta', quarta)
-
-  let name: string
-  let titulum: string
-  let pars: number
-  let hora: string
-  let dies_id: number
-
-  function greet(): void {
-    console.log('all quarta', quarta) 
-    Greet(name).then(result => resultText = result)
+  function handleClick(dies: Dies | null) {
+    currentDies = dies;
   }
 
-  function createQuartum(): void {
-    const jsonStr = JSON.stringify({titulum, pars, hora, dies_id})
-    console.log(jsonStr)
-    CreateQuartum(jsonStr).then(result => console.log(result))
-  }
 </script>
 
-<main>
-  <div>
-    <h2>Deveres</h2>
-   {#each quarta as quartum}
-    <li>{quartum?.titulum}</li>
-  {/each}
-  </div>
-  <hr/>
-    
-  <div class="box" id="box">
-      <label for="titulum">Titulum:</label>
-      <input autocomplete="off" bind:value={titulum} class="input" id="name" type="text"/>
-      <label for="pars">Pars:</label>
-      <input autocomplete="off" bind:value={pars} class="input" id="name" type="number"/>
-      <label for="hora">Hora:</label>
-      <input autocomplete="off" bind:value={hora} class="input" id="name" type="text"/>
-      <label for="dies_id">Dies_id:</label>
-      <input autocomplete="off" bind:value={dies_id} class="input" id="name" type="number"/>
+<div>
+  {#if currentDies === null}
+    <Diei diei={diei} refetch={fetchAllDies} handleClick={handleClick}/>
+  {/if}
+  {#if currentDies !== null}
+    <div class="back-button" on:click={() => handleClick(null)}>
+      <span>{"<"}</span>
     </div>
-    <button class="btn" on:click={() => {greet(); createQuartum();}}>Criar</button>
-</main>
+    <Quartum currentDies={currentDies}/>
+  {/if}
+</div>
+
 
 <style>
-
-  .box {
-    display: flex;
-    flex-direction: column;
+  .back-button{
+    display: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    width: 200px;
+    color: black;
+    font-weight: bold;
+    height: 50px;
+    width: 50px;
+    align-self: center;
     justify-content: center;
-    align-items: center;
-    margin: 1.5rem auto;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.3);
   }
-  
 </style>

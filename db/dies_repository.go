@@ -1,15 +1,21 @@
 package db
 
 import (
+	"database/sql"
+	"errors"
+	"fmt"
 	"log"
 	"time"
 )
+
+/** !TODO: create a CreateDate method: (time.Time) -> string
+ */
 
 type DiesRepository struct{}
 
 func (DiesRepository) Create(db DB) (Result, error) {
 	sqlStmt := `create table "dies" 
-		    (id integer not null unique primary key autoincrement, 
+		    (id integer not null primary key autoincrement, 
 		    date text unique);`
 
 	return db.Exec(sqlStmt)
@@ -49,34 +55,29 @@ func (DiesRepository) FindAll(db DB) ([]Dies, error) {
 }
 
 func (DiesRepository) FindById(db DB, id uint) (Dies, error) {
-	/*
-		var quartum Quartum
+	var dies Dies
 
-		stmt := `select id, titulum, hora, pars, dies_id from quartum where id = ?`
-		err := db.QueryRow(stmt, id).Scan(&quartum.id, &quartum.titulum, &quartum.hora, &quartum.pars, &quartum.dies_id)
+	stmt := `select id, date from dies where id = ?`
+	err := db.QueryRow(stmt, id).Scan(&dies.id, &dies.date)
 
-		if err != nil {
-			if err == sql.ErrNoRows {
-				errMessage := fmt.Sprintf("no quartum found with ID %d", id)
-				return Quartum{}, errors.New(errMessage)
-			}
-			return Quartum{}, err
+	if err != nil {
+		if err == sql.ErrNoRows {
+			errMessage := fmt.Sprintf("no dies found with ID %d", id)
+			return Dies{}, errors.New(errMessage)
 		}
+		return Dies{}, err
+	}
 
-		return quartum, nil
-	*/
-	return Dies{}, nil
+	return dies, nil
 }
 
-func (DiesRepository) Save(db DB, q Dies) error {
+func (DiesRepository) Save(db DB, d Dies) error {
+	_, err := db.Exec(`insert into dies(date) values (?)`,
+		d.GetDate())
 
-	/*
-		db.Exec(`insert into quartum(
-				pars, titulum, hora, dies_id)
-				values (?, ?, ?, ?)`,
-			q.GetPars(), q.GetTitulum(), q.GetHora(), q.GetDiesId())
-		return nil
-	*/
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -98,12 +99,12 @@ func (DiesRepository) Delete(db DB, id uint) (int64, error) {
 	return 0, nil
 }
 
-func (DiesRepository) FindAllQuarta(db DB, id uint) ([]Quartum, error) {
+func (DiesRepository) FindQuarta(db DB, id uint) ([]Quartum, error) {
 	var list []Quartum
 
 	stmt := `
-		 select id, titulum, hora, pars, dies_id 
-		 from quartum 
+		 select id, titulum, hora, pars, dies_id
+		 from quartum
 		 where dies_id = ?;
 		`
 
@@ -131,4 +132,39 @@ func (DiesRepository) FindAllQuarta(db DB, id uint) ([]Quartum, error) {
 	}
 
 	return list, nil
+}
+
+func (DiesRepository) FindByDate(db DB, dateStr string) (Dies, error) {
+	stmt := `select id, date from dies where date = ?`
+	dies := Dies{}
+
+	date, err := MakeDateFromString(dateStr)
+	if err != nil {
+		return dies, err
+	}
+
+	rows, err := db.Query(stmt, date.Format(time.DateOnly))
+	if err != nil {
+		return dies, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err := rows.Scan(&dies.id, &dies.date)
+		if err != nil {
+			return Dies{}, err
+		}
+	}
+
+	return dies, nil
+}
+
+func MakeDateFromString(dateStr string) (time.Time, error) {
+	layout := "2006-01-02"
+
+	date2, err := time.Parse(layout, dateStr)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return date2, nil
 }

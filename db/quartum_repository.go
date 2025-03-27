@@ -19,7 +19,7 @@ type QuartumRepository struct{}
 func (QuartumRepository) Create(db DB) (Result, error) {
 	/** Child table e Foreign key constraint*/
 	sqlStmt := `create table "quartum" (
-		id integer not null unique primary key autoincrement, 
+		id integer not null primary key autoincrement, 
 		titulum varchar(50) not null, 
 		pars tinyint not null, 
 		hora text, 
@@ -98,4 +98,39 @@ func (QuartumRepository) Delete(db DB, id uint) (int64, error) {
 		return rowsAffected, err
 	}
 	return rowsAffected, nil
+}
+
+func (QuartumRepository) FindByDies(db DB, id uint) ([]Quartum, error) {
+	var list []Quartum
+
+	stmt := `
+		 select id, titulum, hora, pars, dies_id
+		 from quartum
+		 where dies_id = ?;
+		`
+
+	rows, err := db.Query(stmt, id)
+	if err != nil {
+		log.Default().Fatalln("error on FindAllQuarta: ", err)
+		return list, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		q := Quartum{}
+
+		err := rows.Scan(&q.id, &q.titulum, &q.hora, &q.pars, &q.dies_id)
+		if err != nil {
+			return []Quartum{}, err
+		}
+
+		list = append(list, q)
+	}
+
+	// Check for errors from iteration
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return list, nil
 }

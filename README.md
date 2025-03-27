@@ -19,3 +19,8 @@ to this in your browser, and you can call your Go code from devtools.
 ## Building
 
 To build a redistributable, production mode package, use `wails build`.
+
+## Todo
+### repositório é instância única
+### repositório referecia Instância única de DB
+### tirar os teste de Quarta de repository_test.go
