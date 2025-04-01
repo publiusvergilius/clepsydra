@@ -153,6 +153,7 @@ func (a *App) GetAllQuarta() string {
 		if err == nil {
 
 			newQuarta = append(newQuarta, str)
+
 		}
 	}
 
@@ -178,7 +179,11 @@ func (a *App) CreateQuartum(data string) string {
 
 	var newQuartum db.Quartum
 
-	newQuartum.SetHora(time.Now())
+	hora, err := newQuartum.CreateHourFromString(request.Hora)
+	if err != nil {
+		return "invalid date format"
+	}
+	newQuartum.SetHora(hora)
 	newQuartum.SetTitulum(request.Titulum)
 	newQuartum.SetDiesId(request.Dies_id)
 	newQuartum.SetPars(request.Pars)

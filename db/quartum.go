@@ -7,12 +7,12 @@ import (
 )
 
 type Quartum struct {
-	id      uint   `json:"id"`
-	titulum string `json:"titulum"`
-	pars    uint8  `json:"pars"`
-	hora    string `json:"hora"`
-	prazo   string `json:"prazo"`
-	dies_id uint   `json:"dies_id"`
+	id      uint
+	titulum string
+	pars    uint8
+	hora    string
+	prazo   string
+	dies_id uint
 }
 
 func (q Quartum) GetID() uint {
@@ -83,4 +83,19 @@ func (q *Quartum) ToString() (string, error) {
 		return "", err
 	}
 	return string(jsonStr), nil
+}
+
+func (q *Quartum) CreateHourFromString(hora string) (time.Time, error) {
+
+	// Define the expected format
+	layout := "15:04:05"
+
+	// Parse the string
+	parsedTime, err := time.Parse(layout, hora)
+
+	if err != nil {
+		return time.Now(), err
+	}
+
+	return parsedTime, nil
 }

@@ -12,7 +12,8 @@
   
   export let currentDies: Dies = {id: 0, date: ""};
 
-  GetQuartaByDies(currentDies?.id).then(result => quarta = JSON.parse(result))
+ const res =  GetQuartaByDies(currentDies?.id).then(result => quarta = JSON.parse(result))
+ console.log(res)
 
   let name: string
   let titulum: string
@@ -24,9 +25,10 @@
     Greet(name).then(result => resultText = result)
   }
 
+
+
   function createQuartum(): void {
     const jsonStr = JSON.stringify({titulum, pars, hora, dies_id: currentDies?.id})
-    console.log(jsonStr)
     CreateQuartum(jsonStr).then(result => console.log(result))
   }
 </script>
@@ -35,23 +37,68 @@
   <div class="layout">
     <div class="box">
       <h1 class="primary_text">Mane</h1>
+      <div class="box-list-container">
+        <div class="box-list">
+          {#each quarta as quartum}
+            {#if quartum?.pars === 1}
+            <li>
+              <h3>{quartum?.titulum}</h3>
+              <h4 class="hora">{quartum?.hora}</h4>
+            </li>
+            {/if}
+          {/each}
+        </div>
+      </div>
     </div>
     <div class="box">
       <h1 class="primary_text">Meridies</h1>
+        <div class="box-list-container">
+          <div class="box-list">
+          {#each quarta as quartum}
+            {#if quartum?.pars === 2}
+            <li>
+              <h3>{quartum?.titulum}</h3>
+              <h4>{quartum?.hora}</h4>
+            </li>
+            {/if}
+          {/each}
+        </div>
+      </div>
+
     </div>
     <div class="box">
       <h1 class="primary_text">Vesper</h1>
+      <div class="box-list-container">
+        <div class="box-list">
+          {#each quarta as quartum}
+            {#if quartum?.pars === 3}
+            <li>
+              <h3>{quartum?.titulum}</h3>
+              <h4>{quartum?.hora}</h4>
+            </li>
+            {/if}
+          {/each}
+        </div>
+      </div>
+
     </div>
     <div class="box">
       <h1 class="primary_text">Nox</h1>
+      <div class="box-list-container">
+        <div class="box-list">
+          {#each quarta as quartum}
+            {#if quartum?.pars === 4}
+            <li>
+              <h3>{quartum?.titulum}</h3>
+              <h4>{quartum?.hora}</h4>
+            </li>
+            {/if}
+          {/each}
+        </div>
+      </div>
     </div>
-  </div>>
-  <div>
-    <h2>Deveres</h2>
-   {#each quarta as quartum}
-    <li>{quartum?.titulum}</li>
-  {/each}
   </div>
+  <div>
 
   <button class="add-button" on:click={() => (isOpenModal = !isOpenModal)}>+</button>
 
@@ -102,6 +149,14 @@
   color: white;
   background-size: cover;
   background-position: center;
+}
+
+.box-list-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
 }
 
 .box:nth-child(1) {
